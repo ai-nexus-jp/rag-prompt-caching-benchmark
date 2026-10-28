@@ -121,17 +121,41 @@ def test_calculate_cost_across_providers() -> None:
     # (1000*2.50 + 4000*1.25 + 200*10.0) / 1,000,000 = (2500 + 5000 + 2000)/1e6 = 0.0095
     assert cost_gpt4o == pytest.approx(0.0095)
 
-    # OpenAI GPT-4.1:
-    # Base: $2.00/1M, Read: $0.50/1M, Output: $8.00/1M
-    cost_gpt41 = calculate_cost(
-        model="gpt-4.1",
+    # Claude Sonnet 5.5:
+    # Base: $2.00/1M, Write: $2.50/1M, Read: $0.10/1M, Output: $10.00/1M
+    cost_sonnet55 = calculate_cost(
+        model="claude-sonnet-5-5",
         base_input_tokens=1_000,
-        cache_write_tokens=0,
-        cache_read_tokens=4_000,
-        output_tokens=250,
+        cache_write_tokens=2_000,
+        cache_read_tokens=3_000,
+        output_tokens=500,
     )
-    # (1000*2.0 + 4000*0.50 + 250*8.0) / 1e6 = (2000 + 2000 + 2000)/1e6 = 0.006
-    assert cost_gpt41 == pytest.approx(0.006)
+    # (1000*2.0 + 2000*2.50 + 3000*0.10 + 500*10.0) / 1,000,000
+    # = (2000 + 5000 + 300 + 5000) / 1,000,000 = 12300 / 1,000,000 = 0.0123
+    assert cost_sonnet55 == pytest.approx(0.0123)
+
+    # OpenAI GPT-6.1 Sol:
+    # Base: $2.00/1M, Write: $2.50/1M, Read: $0.10/1M, Output: $10.00/1M
+    cost_gpt61_sol = calculate_cost(
+        model="gpt-6.1-sol",
+        base_input_tokens=1_000,
+        cache_write_tokens=2_000,
+        cache_read_tokens=3_000,
+        output_tokens=500,
+    )
+    assert cost_gpt61_sol == pytest.approx(0.0123)
+
+    # OpenAI GPT-6 Luna:
+    # Base: $0.10/1M, Write: $0.125/1M, Read: $0.01/1M, Output: $0.50/1M
+    cost_gpt6_luna = calculate_cost(
+        model="gpt-6-luna",
+        base_input_tokens=10_000,
+        cache_write_tokens=0,
+        cache_read_tokens=40_000,
+        output_tokens=1_000,
+    )
+    # (10000*0.10 + 40000*0.01 + 1000*0.50) / 1e6 = (1000 + 400 + 500)/1e6 = 0.0019
+    assert cost_gpt6_luna == pytest.approx(0.0019)
 
     # Gemini 3.8 Flash:
     # Base: $0.75/1M, Read: $0.075/1M, Output: $3.75/1M
@@ -172,12 +196,12 @@ def test_calculate_cost_across_providers() -> None:
 
 def test_env_model_and_api_key_loading(monkeypatch: pytest.MonkeyPatch) -> None:
     """Ensure models and API keys are read strictly from environment / CLI overrides."""
-    monkeypatch.setenv("DEFAULT_ANTHROPIC_MODEL", "claude-sonnet-4-5")
-    monkeypatch.setenv("DEFAULT_OPENAI_MODEL", "gpt-4.1")
+    monkeypatch.setenv("DEFAULT_ANTHROPIC_MODEL", "claude-sonnet-5-5")
+    monkeypatch.setenv("DEFAULT_OPENAI_MODEL", "gpt-6.1-sol")
     monkeypatch.setenv("DEFAULT_GEMINI_MODEL", "gemini-3.8-flash")
 
-    assert get_default_model("anthropic") == "claude-sonnet-4-5"
-    assert get_default_model("openai") == "gpt-4.1"
+    assert get_default_model("anthropic") == "claude-sonnet-5-5"
+    assert get_default_model("openai") == "gpt-6.1-sol"
     assert get_default_model("gemini") == "gemini-3.8-flash"
 
     # CLI override takes precedence over .env

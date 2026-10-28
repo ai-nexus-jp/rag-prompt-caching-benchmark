@@ -32,34 +32,40 @@ class ModelPricing:
     output_per_1m: float
 
 
-# Pricing table (USD per 1M tokens) covering current mainstream and legacy models
+# Pricing table (USD per 1M tokens) based on the official 2026-10-28 survey
 MODEL_PRICING_TABLE: Final[dict[str, ModelPricing]] = {
     # --- Anthropic ---
+    "claude-fable-5-1": ModelPricing(
+        input_per_1m=10.00,
+        cache_write_per_1m=12.50,
+        cache_read_per_1m=0.25,
+        output_per_1m=50.00,
+    ),
+    "claude-opus-5-5": ModelPricing(
+        input_per_1m=4.00,
+        cache_write_per_1m=5.00,
+        cache_read_per_1m=0.20,
+        output_per_1m=20.00,
+    ),
     "claude-sonnet-5-5": ModelPricing(
         input_per_1m=2.00,
         cache_write_per_1m=2.50,
         cache_read_per_1m=0.10,
         output_per_1m=10.00,
     ),
-    "claude-opus-5-5": ModelPricing(
-        input_per_1m=5.00,
-        cache_write_per_1m=6.25,
-        cache_read_per_1m=0.25,
-        output_per_1m=25.00,
+    "claude-sonnet-5": ModelPricing(
+        input_per_1m=2.00,
+        cache_write_per_1m=2.50,
+        cache_read_per_1m=0.20,
+        output_per_1m=10.00,
     ),
     "claude-haiku-5-5": ModelPricing(
-        input_per_1m=1.00,
-        cache_write_per_1m=1.25,
-        cache_read_per_1m=0.10,
-        output_per_1m=5.00,
+        input_per_1m=0.10,
+        cache_write_per_1m=0.125,
+        cache_read_per_1m=0.01,
+        output_per_1m=0.50,
     ),
     "claude-sonnet-4-6": ModelPricing(
-        input_per_1m=3.00,
-        cache_write_per_1m=3.75,
-        cache_read_per_1m=0.30,
-        output_per_1m=15.00,
-    ),
-    "claude-sonnet-4-5": ModelPricing(
         input_per_1m=3.00,
         cache_write_per_1m=3.75,
         cache_read_per_1m=0.30,
@@ -71,11 +77,12 @@ MODEL_PRICING_TABLE: Final[dict[str, ModelPricing]] = {
         cache_read_per_1m=0.10,
         output_per_1m=5.00,
     ),
-    "claude-opus-4-5": ModelPricing(
-        input_per_1m=5.00,
-        cache_write_per_1m=6.25,
-        cache_read_per_1m=0.50,
-        output_per_1m=25.00,
+    # Legacy / Deprecation scheduled Anthropic models (retained for backward compatibility)
+    "claude-sonnet-4-5": ModelPricing(
+        input_per_1m=3.00,
+        cache_write_per_1m=3.75,
+        cache_read_per_1m=0.30,
+        output_per_1m=15.00,
     ),
     "claude-3-7-sonnet-latest": ModelPricing(
         input_per_1m=3.00,
@@ -102,6 +109,19 @@ MODEL_PRICING_TABLE: Final[dict[str, ModelPricing]] = {
         cache_read_per_1m=0.10,
         output_per_1m=10.00,
     ),
+    "gpt-6.1-terra": ModelPricing(
+        input_per_1m=1.00,
+        cache_write_per_1m=1.25,
+        cache_read_per_1m=0.05,
+        output_per_1m=5.00,
+    ),
+    "gpt-6-luna": ModelPricing(
+        input_per_1m=0.10,
+        cache_write_per_1m=0.125,
+        cache_read_per_1m=0.01,
+        output_per_1m=0.50,
+    ),
+    # Legacy / Deprecation scheduled OpenAI models (retained for backward compatibility)
     "gpt-5": ModelPricing(
         input_per_1m=1.25,
         cache_write_per_1m=0.0,
@@ -125,12 +145,6 @@ MODEL_PRICING_TABLE: Final[dict[str, ModelPricing]] = {
         cache_write_per_1m=0.0,
         cache_read_per_1m=0.10,
         output_per_1m=1.60,
-    ),
-    "gpt-4.1-nano": ModelPricing(
-        input_per_1m=0.10,
-        cache_write_per_1m=0.0,
-        cache_read_per_1m=0.025,
-        output_per_1m=0.40,
     ),
     "gpt-4o": ModelPricing(
         input_per_1m=2.50,
@@ -186,24 +200,6 @@ MODEL_PRICING_TABLE: Final[dict[str, ModelPricing]] = {
         cache_write_per_1m=0.0,
         cache_read_per_1m=0.025,
         output_per_1m=1.50,
-    ),
-    "gemini-2.5-pro": ModelPricing(
-        input_per_1m=1.25,
-        cache_write_per_1m=0.0,
-        cache_read_per_1m=0.125,
-        output_per_1m=10.00,
-    ),
-    "gemini-2.5-flash": ModelPricing(
-        input_per_1m=0.30,
-        cache_write_per_1m=0.0,
-        cache_read_per_1m=0.03,
-        output_per_1m=2.50,
-    ),
-    "gemini-2.5-flash-lite": ModelPricing(
-        input_per_1m=0.10,
-        cache_write_per_1m=0.0,
-        cache_read_per_1m=0.01,
-        output_per_1m=0.40,
     ),
 }
 

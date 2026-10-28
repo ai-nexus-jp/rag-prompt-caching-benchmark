@@ -99,13 +99,13 @@ OPENAI_API_KEY="your-openai-api-key-here"
 GEMINI_API_KEY="your-gemini-api-key-here"
 
 # Target Models (Default Settings)
-# Anthropic: claude-sonnet-4-5 (または claude-sonnet-5-5 / claude-haiku-4-5)
-DEFAULT_ANTHROPIC_MODEL="claude-sonnet-4-5"
+# Anthropic: claude-sonnet-5-5 (または claude-opus-5-5 / claude-haiku-5-5)
+DEFAULT_ANTHROPIC_MODEL="claude-sonnet-5-5"
 
-# OpenAI: gpt-4.1 (または gpt-5 / gpt-4.1-mini / gpt-4o / gpt-4o-mini)
-DEFAULT_OPENAI_MODEL="gpt-4.1"
+# OpenAI: gpt-6.1-sol (または gpt-6-luna / gpt-6.1-terra / gpt-6-astra)
+DEFAULT_OPENAI_MODEL="gpt-6.1-sol"
 
-# Google: gemini-3.8-flash (または gemini-3.1-pro / gemini-3.1-pro-preview / gemini-3.5-flash-lite / gemini-3.1-flash-lite)
+# Google: gemini-3.8-flash (または gemini-4-argon / gemini-3.1-pro / gemini-3.5-flash-lite)
 DEFAULT_GEMINI_MODEL="gemini-3.8-flash"
 
 # Benchmark Default Config
@@ -145,7 +145,7 @@ python3 -m benchmark.cli --provider all --turns 5
 python3 -m benchmark.cli --provider anthropic
 
 # モデル明示指定・ターン数指定 (OpenAI)
-python3 -m benchmark.cli --provider openai --model gpt-4.1 --turns 10
+python3 -m benchmark.cli --provider openai --model gpt-6.1-sol --turns 10
 
 # Gemini デフォルト実行 (.env の gemini-3.8-flash を使用)
 python3 -m benchmark.cli --provider gemini --turns 5
@@ -195,28 +195,27 @@ GitHub公開時に読者が「何を入力してこの結果が出たのか」�
 
 > [!IMPORTANT]
 > **【料金単価に関する重要なご注意】**
-> 下表および `benchmark/config.py` に記載されている各モデルのトークン単価（USD / 1M tokens）は、すべて **2026年10月27日時点** の情報に基づく参考値（プロモーション価格・プレビュー価格等を含む）です。
-> 各LLMプロバイダの価格改定やモデルのライフサイクル変更が頻繁に行われるため、**正確な最新料金については必ず各社公式の料金ページ（Anthropic / OpenAI / Google AI for Developers）をご自身で確認の上、必要に応じて `benchmark/config.py` の `MODEL_PRICING_TABLE` を更新してご利用ください。**
+> 下表および `benchmark/config.py` に記載されている各モデルのトークン単価（USD / 1M tokens）は、すべて **2026年10月28日時点の公式調査レポート** の情報に基づく最新設定です（Anthropic Claude 5/5.5系、OpenAI GPT-6系、Google Gemini 3/4系に対応）。
+> 旧世代モデル（Claude 3.5 Sonnet、GPT-4o、GPT-4.1系、Gemini 2.5系など）は各社で退役（Retired）または非推奨（Deprecated/提供終了予定）宣告が進んでいるため、ベンチマークのデフォルトには現行の推奨最新モデルを設定しています。正確な最新仕様や追加オプション料金（12時間キャッシュ保持、Gemini時間ストレージ課金等）については、各社公式の料金ページをご確認ください。
 
-| プロバイダ | モデルID | 通常入力 | キャッシュ書込 | キャッシュ読取 (Hit) | 出力 | キャッシュ方式 |
+| プロバイダ | モデルID (推奨現行モデル) | 通常入力 | キャッシュ書込 | キャッシュ読取 (Hit) | 出力 | キャッシュ方式 / 仕様概要 (2026/10/28基準) |
 | :--- | :--- | ---: | ---: | ---: | ---: | :--- |
-| **Anthropic** | `claude-sonnet-4-5` / `claude-sonnet-4-6` | \$3.00 | \$3.75 | \$0.30 | \$15.00 | 明示的ブロック指定 (`ephemeral`) |
-| **Anthropic** | `claude-sonnet-5-5` | \$2.00 | \$2.50 | \$0.10 | \$10.00 | 明示的ブロック指定 (`ephemeral`) |
-| **Anthropic** | `claude-haiku-4-5` / `claude-haiku-5-5` | \$1.00 | \$1.25 | \$0.10 | \$5.00 | 明示的ブロック指定 (`ephemeral`) |
-| **Anthropic** | `claude-3-5-sonnet-latest` | \$3.00 | \$3.75 | \$0.30 | \$15.00 | 明示的ブロック指定 (`ephemeral`) |
-| **OpenAI** | `gpt-4.1` | \$2.00 | \$0.00 | \$0.50 | \$8.00 | 自動Prefix Caching |
-| **OpenAI** | `gpt-4.1-mini` | \$0.40 | \$0.00 | \$0.10 | \$1.60 | 自動Prefix Caching |
-| **OpenAI** | `gpt-5` | \$1.25 | \$0.00 | \$0.125 | \$10.00 | 自動Prefix Caching |
-| **OpenAI** | `gpt-5-mini` | \$0.25 | \$0.00 | \$0.025 | \$1.00 | 自動Prefix Caching |
-| **OpenAI** | `gpt-4o` | \$2.50 | \$0.00 | \$1.25 | \$10.00 | 自動Prefix Caching |
-| **OpenAI** | `gpt-4o-mini` | \$0.15 | \$0.00 | \$0.075 | \$0.60 | 自動Prefix Caching |
-| **Google** | `gemini-3.8-flash` (デフォルト) | \$0.75 | \$0.00 | \$0.075 | \$3.75 | Context Caching (Explicit / Implicit) |
-| **Google** | `gemini-3.1-pro` / `gemini-3.1-pro-preview` | \$2.00 | \$0.00 | \$0.20 | \$12.00 | Context Caching (Explicit / Implicit) |
-| **Google** | `gemini-3.5-flash-lite` | \$0.30 | \$0.00 | \$0.03 | \$2.50 | Context Caching (Explicit / Implicit) |
-| **Google** | `gemini-3.1-flash-lite` | \$0.25 | \$0.00 | \$0.025 | \$1.50 | Context Caching (Explicit / Implicit) |
-| **Google** | `gemini-2.5-flash` | \$0.30 | \$0.00 | \$0.03 | \$2.50 | Context Caching (Explicit / Implicit) |
-| **Google** | `gemini-2.5-pro` | \$1.25 | \$0.00 | \$0.125 | \$10.00 | Context Caching (Explicit / Implicit) |
-| **Google** | `gemini-2.5-flash-lite` | \$0.10 | \$0.00 | \$0.01 | \$0.40 | Context Caching (Explicit / Implicit) |
+| **Anthropic** | `claude-fable-5-1` | \$10.00 | \$12.50 | \$0.25 | \$50.00 | 明示的ブロック指定 (Hit: 0.025x / 97.5%引) |
+| **Anthropic** | `claude-opus-5-5` | \$4.00 | \$5.00 | \$0.20 | \$20.00 | 明示的ブロック指定 (Hit: 0.05x / 95%引) |
+| **Anthropic** | `claude-sonnet-5-5` (デフォルト) | \$2.00 | \$2.50 | \$0.10 | \$10.00 | 明示的ブロック指定 (Hit: 0.05x / 95%引) |
+| **Anthropic** | `claude-sonnet-5` | \$2.00 | \$2.50 | \$0.20 | \$10.00 | 明示的ブロック指定 (Hit: 0.10x / 90%引) |
+| **Anthropic** | `claude-haiku-5-5` | \$0.10 | \$0.125 | \$0.01 | \$0.50 | 明示的ブロック指定 (≤100k時、Hit: 90%引) |
+| **Anthropic** | `claude-sonnet-4-6` | \$3.00 | \$3.75 | \$0.30 | \$15.00 | 明示的ブロック指定 (Hit: 0.10x / 90%引) |
+| **OpenAI** | `gpt-6-astra` | \$10.00 | \$12.50 | \$1.00 | \$50.00 | Responses API (30分TTL: 1.25x, Hit: 90%引) |
+| **OpenAI** | `gpt-6.1-sol` (デフォルト) | \$2.00 | \$2.50 | \$0.10 | \$10.00 | Responses API (30分TTL: 1.25x, Hit: 95%引) |
+| **OpenAI** | `gpt-6.1-terra` | \$1.00 | \$1.25 | \$0.05 | \$5.00 | Responses API (30分TTL: 1.25x, Hit: 95%引) |
+| **OpenAI** | `gpt-6-luna` | \$0.10 | \$0.125 | \$0.01 | \$0.50 | Responses API (30分TTL: 1.25x, Hit: 90%引) |
+| **Google** | `gemini-4-argon` | \$2.00 | \$0.00 | \$0.10 | \$10.00 | 暗黙キャッシュ (プロモーションレート適用中) |
+| **Google** | `gemini-3.8-flash` (デフォルト) | \$0.75 | \$0.00 | \$0.075 | \$3.75 | Context Caching (明示/暗黙 + 保管料$0.50/M tok/hr) |
+| **Google** | `gemini-3.6-flash` | \$0.75 | \$0.00 | \$0.075 | \$3.75 | Context Caching (明示/暗黙 + 保管料$0.50/M tok/hr) |
+| **Google** | `gemini-3.1-pro-preview` | \$2.00 | \$0.00 | \$0.20 | \$12.00 | Context Caching (≤200k時、Hit: 90%引) |
+| **Google** | `gemini-3.5-flash-lite` | \$0.30 | \$0.00 | \$0.03 | \$2.50 | Context Caching (明示/暗黙) |
+| **Google** | `gemini-3.1-flash-lite` | \$0.25 | \$0.00 | \$0.025 | \$1.50 | Context Caching (明示/暗黙) |
 
 ---
 

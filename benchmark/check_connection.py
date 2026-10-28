@@ -102,7 +102,7 @@ def check_openai(model: str | None = None) -> CheckResult:
         start = time.perf_counter()
         resp = client.chat.completions.create(
             model=target_model,
-            max_completion_tokens=1,
+            max_completion_tokens=16,
             messages=[{"role": "user", "content": "ping"}],
         )
         elapsed = time.perf_counter() - start
