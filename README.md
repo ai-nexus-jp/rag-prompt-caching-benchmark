@@ -249,3 +249,11 @@ GitHub公開時に読者が「何を入力してこの結果が出たのか」�
 # Ruff による静的解析チェック
 .venv/bin/ruff check .
 ```
+
+---
+
+## 9. ライセンス
+
+本プロジェクトは [MIT License](LICENSE) の下で公開されています。  
+Copyright (c) 2026 AI Nexus
+
