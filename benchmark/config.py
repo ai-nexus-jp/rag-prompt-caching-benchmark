@@ -206,12 +206,16 @@ MODEL_PRICING_TABLE: Final[dict[str, ModelPricing]] = {
 PROVIDER_ENV_MODEL_KEYS: Final[dict[str, str]] = {
     "anthropic": "DEFAULT_ANTHROPIC_MODEL",
     "openai": "DEFAULT_OPENAI_MODEL",
+    "openai-responses": "DEFAULT_OPENAI_MODEL",
+    "openai_responses": "DEFAULT_OPENAI_MODEL",
     "gemini": "DEFAULT_GEMINI_MODEL",
 }
 
 PROVIDER_ENV_API_KEYS: Final[dict[str, str]] = {
     "anthropic": "ANTHROPIC_API_KEY",
     "openai": "OPENAI_API_KEY",
+    "openai-responses": "OPENAI_API_KEY",
+    "openai_responses": "OPENAI_API_KEY",
     "gemini": "GEMINI_API_KEY",
 }
 

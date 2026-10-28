@@ -39,6 +39,6 @@ select = ["E", "F", "I", "W", "UP", "B"]
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests/test_benchmark.py"]
+testpaths = ["tests"]
 pythonpath = ["."]
 

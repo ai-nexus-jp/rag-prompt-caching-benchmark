@@ -7,13 +7,17 @@ To run:
 
 from __future__ import annotations
 
+import os
+
 import pytest
 
 from benchmark.check_connection import check_anthropic, check_gemini, check_openai
 from benchmark.config import get_api_key
 
 
-def _is_key_configured(provider: str) -> bool:
+def _should_run_live(provider: str) -> bool:
+    if os.getenv("RUN_LIVE_TESTS", "0") != "1":
+        return False
     try:
         key = get_api_key(provider)
         return bool(key and not key.startswith("your-"))
@@ -22,8 +26,8 @@ def _is_key_configured(provider: str) -> bool:
 
 
 @pytest.mark.skipif(
-    not _is_key_configured("anthropic"),
-    reason="ANTHROPIC_API_KEY is not set or set to placeholder in .env",
+    not _should_run_live("anthropic"),
+    reason="RUN_LIVE_TESTS != 1 or ANTHROPIC_API_KEY is not configured",
 )
 def test_anthropic_connection() -> None:
     result = check_anthropic()
@@ -31,8 +35,8 @@ def test_anthropic_connection() -> None:
 
 
 @pytest.mark.skipif(
-    not _is_key_configured("openai"),
-    reason="OPENAI_API_KEY is not set or set to placeholder in .env",
+    not _should_run_live("openai"),
+    reason="RUN_LIVE_TESTS != 1 or OPENAI_API_KEY is not configured",
 )
 def test_openai_connection() -> None:
     result = check_openai()
@@ -40,8 +44,8 @@ def test_openai_connection() -> None:
 
 
 @pytest.mark.skipif(
-    not _is_key_configured("gemini"),
-    reason="GEMINI_API_KEY is not set or set to placeholder in .env",
+    not _should_run_live("gemini"),
+    reason="RUN_LIVE_TESTS != 1 or GEMINI_API_KEY is not configured",
 )
 def test_gemini_connection() -> None:
     result = check_gemini()

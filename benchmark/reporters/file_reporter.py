@@ -80,7 +80,8 @@ class FileReporter:
                 )
 
         # Copy to latest directory with clean canonical name for Git tracking
-        latest_csv_path = self.latest_dir / f"benchmark_{result.provider}.csv"
+        clean_provider = result.provider.replace("-", "_")
+        latest_csv_path = self.latest_dir / f"benchmark_{clean_provider}.csv"
         shutil.copyfile(csv_path, latest_csv_path)
 
         return csv_path
@@ -198,10 +199,25 @@ class FileReporter:
         md_path.write_text("\n".join(lines), encoding="utf-8")
 
         # Copy to latest directory with clean canonical name for Git tracking
-        latest_md_path = self.latest_dir / f"report_{result.provider}.md"
+        clean_provider = result.provider.replace("-", "_")
+        latest_md_path = self.latest_dir / f"report_{clean_provider}.md"
         shutil.copyfile(md_path, latest_md_path)
 
         return md_path
+
+    @staticmethod
+    def _format_provider_display(provider: str) -> str:
+        """Format display label for provider name in comparison tables."""
+        p = provider.lower()
+        if p == "anthropic":
+            return "ANTHROPIC"
+        if p == "openai":
+            return "OPENAI (Chat Completions)"
+        if p in ("openai-responses", "openai_responses"):
+            return "OPENAI (Responses API 推奨)"
+        if p == "gemini":
+            return "GOOGLE GEMINI"
+        return provider.upper()
 
     def export_comparison_markdown(
         self, results: list[BenchmarkResult], filename: str | None = None
@@ -221,25 +237,26 @@ class FileReporter:
 
         md_path = self.output_dir / filename
         lines: list[str] = [
-            "# LLMプロンプトキャッシュ 3社一括実測・比較ベンチマークレポート",
+            "# LLMプロンプトキャッシュ 主要方式・3社一括実測比較ベンチマークレポート",
             "",
             f"- **計測日時 (UTC)**: `{datetime.now(timezone.utc).isoformat()}`",
-            f"- **比較プロバイダ数**: {len(results)} プロバイダ",
+            f"- **比較検証パターン数**: {len(results)} 方式",
             "- **単価基準**: 2026年10月28日時点の主要LLMプロバイダ公式改定・調査レポートに基づく最新単価設定",
             "",
             "---",
             "",
-            "## 1. プロバイダ別サマリー比較（横並び）",
+            "## 1. プロバイダ・方式別サマリー比較（横並び）",
             "",
-            "| プロバイダ | 対象モデル | 試行ターン数 | 最適化後HIT率 (Turns 2+) | bad_prefixコスト | good_prefixコスト | コスト削減率 (%) | コスト削減額 (USD) |",
+            "| プロバイダ / 方式 | 対象モデル | 試行ターン数 | 最適化後HIT率 (Turns 2+) | bad_prefixコスト | good_prefixコスト | コスト削減率 (%) | コスト削減額 (USD) |",
             "| :--- | :--- | :---: | :---: | ---: | ---: | :---: | ---: |",
         ]
 
         for res in results:
             bad = res.bad_summary
             good = res.good_summary
+            disp = self._format_provider_display(res.provider)
             lines.append(
-                f"| **{res.provider.upper()}** | `{res.model}` | 各{res.turns}T | **{good.warm_turns_hit_rate:.1f}%** | `${bad.total_cost_usd:.6f}` | **`${good.total_cost_usd:.6f}`** | **`-{res.cost_reduction_rate:.2f}%`** | `-${res.cost_savings_usd:.6f}` |"
+                f"| **{disp}** | `{res.model}` | 各{res.turns}T | **{good.warm_turns_hit_rate:.1f}%** | `${bad.total_cost_usd:.6f}` | **`${good.total_cost_usd:.6f}`** | **`-{res.cost_reduction_rate:.2f}%`** | `-${res.cost_savings_usd:.6f}` |"
             )
 
         lines.extend(
@@ -266,7 +283,9 @@ class FileReporter:
         )
 
         for res in results:
-            lines.append(f"- **{res.provider.upper()} (`{res.model}`)**: 各種ログおよび個別詳細レポートを参照")
+            disp = self._format_provider_display(res.provider)
+            clean_provider = res.provider.replace("-", "_")
+            lines.append(f"- [**{disp} (`{res.model}`)**](./report_{clean_provider}.md): 詳細ターン別ログ・キャッシュ内訳")
 
         md_path.write_text("\n".join(lines), encoding="utf-8")
 

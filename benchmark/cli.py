@@ -21,6 +21,7 @@ from benchmark.providers.anthropic_provider import AnthropicProvider
 from benchmark.providers.base import BaseProvider
 from benchmark.providers.gemini_provider import GeminiProvider
 from benchmark.providers.openai_provider import OpenAIProvider
+from benchmark.providers.openai_responses_provider import OpenAIResponsesProvider
 from benchmark.reporters.console_reporter import ConsoleReporter
 from benchmark.reporters.file_reporter import FileReporter
 
@@ -38,8 +39,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--provider",
         type=str,
         required=True,
-        choices=["anthropic", "openai", "gemini", "all"],
-        help="Target LLM provider ('anthropic', 'openai', 'gemini', or 'all' to run all 3).",
+        choices=["anthropic", "openai", "openai-responses", "gemini", "all"],
+        help="Target LLM provider ('anthropic', 'openai', 'openai-responses', 'gemini', or 'all' to run all).",
     )
     parser.add_argument(
         "--model",
@@ -87,6 +88,8 @@ def create_provider(provider_name: str, model: str, api_key: str) -> BaseProvide
         return AnthropicProvider(model=model, api_key=api_key)
     if normalized == "openai":
         return OpenAIProvider(model=model, api_key=api_key)
+    if normalized in ("openai-responses", "openai_responses"):
+        return OpenAIResponsesProvider(model=model, api_key=api_key)
     if normalized == "gemini":
         return GeminiProvider(model=model, api_key=api_key)
     raise ValueError(f"Unsupported provider: '{provider_name}'")
@@ -112,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     questions = load_questions(args.questions_file)
 
     target_providers = (
-        ["anthropic", "openai", "gemini"]
+        ["anthropic", "openai", "openai-responses", "gemini"]
         if args.provider.lower() == "all"
         else [args.provider.lower()]
     )
