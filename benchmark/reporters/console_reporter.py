@@ -121,3 +121,35 @@ class ConsoleReporter:
         )
         self.console.print(summary_panel)
 
+    def print_multi_provider_summary(self, results: list[BenchmarkResult]) -> None:
+        """Render a comparative table across multiple providers."""
+        self.console.print()
+        table = Table(
+            title="Cross-Provider Prompt Caching Comparison Summary",
+            box=box.ROUNDED,
+            header_style="bold magenta",
+            show_lines=True,
+        )
+        table.add_column("Provider", style="bold")
+        table.add_column("Model")
+        table.add_column("Turns", justify="right")
+        table.add_column("Warm HIT Rate (Turns 2+)", justify="right")
+        table.add_column("bad_prefix Cost", justify="right")
+        table.add_column("good_prefix Cost", justify="right")
+        table.add_column("Cost Reduction", justify="right")
+
+        for res in results:
+            bad = res.bad_summary
+            good = res.good_summary
+            table.add_row(
+                res.provider.upper(),
+                res.model,
+                str(res.turns),
+                f"[bold green]{good.warm_turns_hit_rate:.1f}%[/bold green]",
+                f"${bad.total_cost_usd:.6f}",
+                f"[bold green]${good.total_cost_usd:.6f}[/bold green]",
+                f"[bold green]-{res.cost_reduction_rate:.1f}%[/bold green]",
+            )
+
+        self.console.print(table)
+

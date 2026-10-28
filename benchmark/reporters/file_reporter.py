@@ -191,3 +191,70 @@ class FileReporter:
         md_path.write_text("\n".join(lines), encoding="utf-8")
         return md_path
 
+    def export_comparison_markdown(
+        self, results: list[BenchmarkResult], filename: str | None = None
+    ) -> Path:
+        """Generate a cross-provider comparison Markdown report comparing multiple providers.
+
+        Args:
+            results: List of completed BenchmarkResult instances across providers.
+            filename: Optional explicit filename.
+
+        Returns:
+            Path to the written comparison Markdown file.
+        """
+        if not filename:
+            ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+            filename = f"comparison_report_{ts}.md"
+
+        md_path = self.output_dir / filename
+        lines: list[str] = [
+            "# LLMプロンプトキャッシュ 3社一括実測・比較ベンチマークレポート",
+            "",
+            f"- **計測日時 (UTC)**: `{datetime.now(timezone.utc).isoformat()}`",
+            f"- **比較プロバイダ数**: {len(results)} プロバイダ",
+            "",
+            "---",
+            "",
+            "## 1. プロバイダ別サマリー比較（横並び）",
+            "",
+            "| プロバイダ | 対象モデル | 試行ターン数 | 最適化後HIT率 (Turns 2+) | bad_prefixコスト | good_prefixコスト | コスト削減率 (%) | コスト削減額 (USD) |",
+            "| :--- | :--- | :---: | :---: | ---: | ---: | :---: | ---: |",
+        ]
+
+        for res in results:
+            bad = res.bad_summary
+            good = res.good_summary
+            lines.append(
+                f"| **{res.provider.upper()}** | `{res.model}` | 各{res.turns}T | **{good.warm_turns_hit_rate:.1f}%** | `${bad.total_cost_usd:.6f}` | **`${good.total_cost_usd:.6f}`** | **`-{res.cost_reduction_rate:.2f}%`** | `-${res.cost_savings_usd:.6f}` |"
+            )
+
+        lines.extend(
+            [
+                "",
+                "---",
+                "",
+                "## 2. レイテンシ（応答時間）測定に関する技術的考察と前提",
+                "",
+                "> [!NOTE]",
+                "> **レイテンシの計測境界**: 全プロバイダ共通で `time.perf_counter()` を使用し、**各社公式SDKがHTTPリクエストを送信開始してから、レスポンスの受信・デシリアライズを完了するまでの純粋なAPIターンアラウンド往復時間** を計測しています。",
+                "",
+                "1. **キャッシュヒット時（good_prefix）のレイテンシ短縮効果**:",
+                "   - キャッシュヒット時は、LLMサーバー側で固定文脈（約3,500トークン）のPrefillフェーズ（プロンプト処理）のアテンション計算がスキップされるため、TTFT（Time-To-First-Token）および全体レイテンシが大幅に短縮されます。",
+                "2. **プロバイダ間の絶対値レイテンシ比較における注意点**:",
+                "   - プロバイダ間での絶対値（ミリ秒）比較は、物理的なAPIサーバー所在地（米東海岸 vs 米西海岸 vs 日本等）、モデルのパラメータ規模（大規模Dense vs 軽量MoE）、および各社インフラの混雑状況に依存します。",
+                "   - したがって、ベンチマークにおける最も妥当な評価指標は「他社との絶対時間差」ではなく、**「同一プロバイダ内における bad_prefix（ミス）と good_prefix（ヒット）のレイテンシ改善比率」** です。",
+                "",
+                "---",
+                "",
+                "## 3. 各プロバイダ個別レポートへのリンク",
+                "",
+            ]
+        )
+
+        for res in results:
+            lines.append(f"- **{res.provider.upper()} (`{res.model}`)**: 各種ログおよび個別詳細レポートを参照")
+
+        md_path.write_text("\n".join(lines), encoding="utf-8")
+        return md_path
+

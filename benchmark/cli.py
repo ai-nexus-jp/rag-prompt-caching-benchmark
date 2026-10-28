@@ -38,8 +38,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--provider",
         type=str,
         required=True,
-        choices=["anthropic", "openai", "gemini"],
-        help="Target LLM provider ('anthropic', 'openai', or 'gemini').",
+        choices=["anthropic", "openai", "gemini", "all"],
+        help="Target LLM provider ('anthropic', 'openai', 'gemini', or 'all' to run all 3).",
     )
     parser.add_argument(
         "--model",
@@ -98,15 +98,6 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     console = Console()
 
-    try:
-        model = get_default_model(args.provider, args.model)
-        # Validate pricing existence early before making API calls
-        get_model_pricing(model)
-        api_key = get_api_key(args.provider)
-    except (ValueError, KeyError) as exc:
-        console.print(f"[bold red]Configuration Error:[/bold red] {exc}")
-        return 1
-
     turns = args.turns if args.turns is not None else get_default_turns()
     delay = args.delay if args.delay is not None else get_default_delay()
     output_dir = args.output_dir if args.output_dir is not None else get_default_output_dir()
@@ -116,44 +107,73 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     console_reporter = ConsoleReporter(console=console)
-    console_reporter.print_header(
-        provider=args.provider,
-        model=model,
-        turns=turns,
-        delay=delay,
-    )
-
-    try:
-        provider = create_provider(args.provider, model=model, api_key=api_key)
-        static_context = load_static_manual(args.manual_file)
-        questions = load_questions(args.questions_file)
-        runner = BenchmarkRunner(
-            provider=provider,
-            turns=turns,
-            delay_seconds=delay,
-            static_context=static_context,
-            questions=questions,
-        )
-        result = runner.run(
-            on_layout_start=console_reporter.print_layout_start,
-            on_turn_complete=console_reporter.print_turn_record,
-        )
-    except Exception as exc:
-        console.print(f"\n[bold red]Benchmark Execution Error:[/bold red] {exc}")
-        return 1
-
-    console_reporter.print_summary(result)
-
     file_reporter = FileReporter(output_dir=output_dir)
-    csv_path = file_reporter.export_csv(result)
-    md_path = file_reporter.export_markdown(result)
+    static_context = load_static_manual(args.manual_file)
+    questions = load_questions(args.questions_file)
 
-    console.print(
-        f"\n[bold cyan]Artifacts Saved:[/bold cyan]\n"
-        f"  • CSV Log:         [underline]{csv_path}[/underline]\n"
-        f"  • Markdown Report: [underline]{md_path}[/underline]"
+    target_providers = (
+        ["anthropic", "openai", "gemini"]
+        if args.provider.lower() == "all"
+        else [args.provider.lower()]
     )
-    return 0
+
+    successful_results = []
+
+    for prov in target_providers:
+        console.print()
+        try:
+            model = get_default_model(prov, args.model if args.provider != "all" else None)
+            get_model_pricing(model)
+            api_key = get_api_key(prov)
+        except (ValueError, KeyError) as exc:
+            console.print(f"[bold red]Configuration Error for {prov}:[/bold red] {exc}")
+            if args.provider != "all":
+                return 1
+            continue
+
+        console_reporter.print_header(
+            provider=prov,
+            model=model,
+            turns=turns,
+            delay=delay,
+        )
+
+        try:
+            provider = create_provider(prov, model=model, api_key=api_key)
+            runner = BenchmarkRunner(
+                provider=provider,
+                turns=turns,
+                delay_seconds=delay,
+                static_context=static_context,
+                questions=questions,
+            )
+            result = runner.run(
+                on_layout_start=console_reporter.print_layout_start,
+                on_turn_complete=console_reporter.print_turn_record,
+            )
+            successful_results.append(result)
+            console_reporter.print_summary(result)
+
+            csv_path = file_reporter.export_csv(result)
+            md_path = file_reporter.export_markdown(result)
+            console.print(
+                f"[bold cyan]Artifacts Saved ({prov}):[/bold cyan]\n"
+                f"  • CSV: {csv_path}\n"
+                f"  • Markdown: {md_path}"
+            )
+        except Exception as exc:
+            console.print(f"\n[bold red]Benchmark Execution Error for {prov}:[/bold red] {exc}")
+            if args.provider != "all":
+                return 1
+
+    if args.provider == "all" and successful_results:
+        console_reporter.print_multi_provider_summary(successful_results)
+        comp_md = file_reporter.export_comparison_markdown(successful_results)
+        console.print(
+            f"\n[bold green]★ Cross-Provider Comparison Report Saved:[/bold green] [underline]{comp_md}[/underline]"
+        )
+
+    return 0 if successful_results else 1
 
 
 if __name__ == "__main__":

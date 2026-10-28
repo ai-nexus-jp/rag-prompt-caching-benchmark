@@ -420,6 +420,10 @@ def test_cli_parser_and_main_with_mock(
     """Test CLI argument parsing and full execution flow with mocked provider."""
     monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-mock-12345")
     monkeypatch.setenv("DEFAULT_ANTHROPIC_MODEL", "claude-sonnet-4-5")
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-proj-mock-12345")
+    monkeypatch.setenv("DEFAULT_OPENAI_MODEL", "gpt-4.1")
+    monkeypatch.setenv("GEMINI_API_KEY", "mock-gemini-key")
+    monkeypatch.setenv("DEFAULT_GEMINI_MODEL", "gemini-3.8-flash")
 
     parser = build_parser()
     args = parser.parse_args(
@@ -447,3 +451,23 @@ def test_cli_parser_and_main_with_mock(
     assert exit_code == 0
     assert len(list(tmp_path.glob("benchmark_*.csv"))) == 1
     assert len(list(tmp_path.glob("report_*.md"))) == 1
+
+    # Test --provider all
+    with patch(
+        "benchmark.cli.create_provider",
+        side_effect=lambda prov, model, api_key: DummyMockProvider(model=model),
+    ):
+        exit_code_all = main(
+            [
+                "--provider",
+                "all",
+                "--turns",
+                "2",
+                "--delay",
+                "0.0",
+                "--output-dir",
+                str(tmp_path),
+            ]
+        )
+    assert exit_code_all == 0
+    assert len(list(tmp_path.glob("comparison_report_*.md"))) == 1
