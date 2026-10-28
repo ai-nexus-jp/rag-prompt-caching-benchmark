@@ -1,0 +1,11 @@
+timestamp,provider,model,layout,turn,base_input_tokens,cache_write_tokens,cache_read_tokens,output_tokens,total_input_tokens,cache_hit_rate,turn_cost_usd,latency_seconds
+2026-10-28T00:30:21.609013+00:00,anthropic,claude-sonnet-4-5,bad_prefix,1,54,6373,0,256,6427,0.00,0.02790075,6.885
+2026-10-28T00:30:28.854686+00:00,anthropic,claude-sonnet-4-5,bad_prefix,2,58,6376,0,256,6434,0.00,0.02792400,5.743
+2026-10-28T00:30:35.448367+00:00,anthropic,claude-sonnet-4-5,bad_prefix,3,59,6371,0,256,6430,0.00,0.02790825,5.091
+2026-10-28T00:30:43.726570+00:00,anthropic,claude-sonnet-4-5,bad_prefix,4,59,6373,0,256,6432,0.00,0.02791575,6.775
+2026-10-28T00:30:52.906441+00:00,anthropic,claude-sonnet-4-5,bad_prefix,5,54,6367,0,256,6421,0.00,0.02787825,7.676
+2026-10-28T00:31:00.757217+00:00,anthropic,claude-sonnet-4-5,good_prefix,1,252,6174,0,256,6426,0.00,0.02774850,6.343
+2026-10-28T00:31:08.029764+00:00,anthropic,claude-sonnet-4-5,good_prefix,2,260,0,6174,256,6434,95.96,0.00647220,5.768
+2026-10-28T00:31:14.474894+00:00,anthropic,claude-sonnet-4-5,good_prefix,3,260,0,6174,158,6434,95.96,0.00500220,4.943
+2026-10-28T00:31:22.141924+00:00,anthropic,claude-sonnet-4-5,good_prefix,4,264,0,6174,249,6438,95.90,0.00637920,6.161
+2026-10-28T00:31:30.660671+00:00,anthropic,claude-sonnet-4-5,good_prefix,5,256,0,6174,256,6430,96.02,0.00646020,7.013

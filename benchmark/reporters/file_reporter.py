@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -16,6 +17,8 @@ class FileReporter:
     def __init__(self, output_dir: Path) -> None:
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.latest_dir = self.output_dir / "latest"
+        self.latest_dir.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def _sanitize_filename(value: str) -> str:
@@ -75,6 +78,10 @@ class FileReporter:
                         "latency_seconds": f"{r.latency_seconds:.3f}",
                     }
                 )
+
+        # Copy to latest directory with clean canonical name for Git tracking
+        latest_csv_path = self.latest_dir / f"benchmark_{result.provider}.csv"
+        shutil.copyfile(csv_path, latest_csv_path)
 
         return csv_path
 
@@ -189,6 +196,11 @@ class FileReporter:
         )
 
         md_path.write_text("\n".join(lines), encoding="utf-8")
+
+        # Copy to latest directory with clean canonical name for Git tracking
+        latest_md_path = self.latest_dir / f"report_{result.provider}.md"
+        shutil.copyfile(md_path, latest_md_path)
+
         return md_path
 
     def export_comparison_markdown(
@@ -256,5 +268,10 @@ class FileReporter:
             lines.append(f"- **{res.provider.upper()} (`{res.model}`)**: 各種ログおよび個別詳細レポートを参照")
 
         md_path.write_text("\n".join(lines), encoding="utf-8")
+
+        # Copy to latest directory with clean canonical name for Git tracking
+        latest_comp_path = self.latest_dir / "comparison_report.md"
+        shutil.copyfile(md_path, latest_comp_path)
+
         return md_path
 

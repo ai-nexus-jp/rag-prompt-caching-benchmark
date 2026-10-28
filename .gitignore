@@ -12,8 +12,9 @@ env/
 .env
 .env.local
 
-# Benchmark output & results
-results/
+# Benchmark output & results (history ignored, latest curated summary tracked)
+results/*
+!results/latest/
 
 # Testing & linting caches
 .pytest_cache/

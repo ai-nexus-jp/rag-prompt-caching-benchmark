@@ -41,6 +41,13 @@ rag-prompt-caching-benchmark/
 ├── data/                           # 検証用インプットデータ（透明性・再現性確保）
 │   ├── static_manual.md            # 固定コンテキスト（全社規定マニュアル 約3,500tok）
 │   └── questions.json              # ターン別ユーザー質問定義リスト
+├── results/                        # ベンチマーク出力先
+│   └── latest/                     # ★ 常に最新1回分の実測レポート一式（Git追跡対象）
+│       ├── comparison_report.md    # 3社横並び統合比較レポート
+│       ├── report_anthropic.md     # Anthropic詳細レポート
+│       ├── report_openai.md        # OpenAI詳細レポート
+│       ├── report_gemini.md        # Gemini詳細レポート
+│       └── *.csv                   # 各社ターン別生ログデータ
 ├── benchmark/
 │   ├── __init__.py
 │   ├── check_connection.py         # APIキー検証・疎通テストツール
@@ -56,7 +63,7 @@ rag-prompt-caching-benchmark/
 │   └── reporters/                  # 出力フォーマッタ
 │       ├── __init__.py
 │       ├── console_reporter.py     # richライブラリを用いたターミナル描画
-│       └── file_reporter.py        # CSV / Markdownレポート自動生成
+│       └── file_reporter.py        # CSV / Markdownレポート自動生成（latest自動同期）
 └── tests/
     ├── test_benchmark.py           # モックを用いたトークン抽出・コスト計算・CLIの単体テスト
     └── test_connection.py          # 実APIへの疎通・認証テスト
